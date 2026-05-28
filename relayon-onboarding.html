@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RelayOn — Create a Family Page</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --cream: #FAF7F2;
+    --warm-white: #FDF9F4;
+    --sand: #E8DFD0;
+    --tan: #C9B99A;
+    --brown: #8B6F52;
+    --dark: #2C2318;
+    --muted: #7A6A58;
+    --sage: #8A9E88;
+    --blush: #D4A99A;
+    --accent: #B5785A;
+    --accent-light: rgba(181,120,90,0.1);
+  }
+
+  html, body { height: 100%; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── LAYOUT ── */
+  .shell {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    min-height: 100vh;
+  }
+
+  /* ── LEFT PANEL ── */
+  .left-panel {
+    background: var(--dark);
+    padding: 2.5rem 2.5rem;
+    display: flex; flex-direction: column;
+    position: sticky; top: 0; height: 100vh;
+    overflow: hidden;
+  }
+
+  .left-bg {
+    position: absolute; inset: 0; z-index: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 10% 20%, rgba(212,169,154,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 80%, rgba(138,158,136,0.1) 0%, transparent 55%);
+  }
+
+  .left-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem; font-weight: 400;
+    color: var(--cream); z-index: 1;
+    text-decoration: none; display: block;
+    margin-bottom: 3rem;
+  }
+  .left-logo span { color: var(--blush); font-style: italic; }
+
+  .left-content { z-index: 1; flex: 1; display: flex; flex-direction: column; }
+
+  .left-heading {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.2rem; font-weight: 300; line-height: 1.2;
+    color: var(--cream); margin-bottom: 1rem;
+  }
+  .left-heading em { font-style: italic; color: var(--blush); }
+
+  .left-body {
+    font-size: 0.88rem; color: rgba(250,247,242,0.5);
+    line-height: 1.75; font-weight: 300; margin-bottom: 3rem;
+  }
+
+  /* Step indicators */
+  .steps-nav { display: flex; flex-direction: column; gap: 0; }
+
+  .step-indicator {
+    display: flex; align-items: flex-start; gap: 1rem;
+    padding: 0.75rem 0; cursor: pointer;
+    position: relative;
+  }
+  .step-indicator:not(:last-child)::after {
+    content: '';
+    position: absolute; left: 15px; top: 42px;
+    width: 1px; height: calc(100% - 10px);
+    background: rgba(201,185,154,0.15);
+  }
+
+  .step-dot {
+    width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem; font-weight: 500;
+    border: 1.5px solid rgba(201,185,154,0.25);
+    color: rgba(250,247,242,0.3);
+    transition: all 0.3s;
+    background: transparent;
+    position: relative; z-index: 1;
+  }
+  .step-indicator.active .step-dot {
+    background: var(--accent); border-color: var(--accent);
+    color: white; box-shadow: 0 0 0 4px rgba(181,120,90,0.2);
+  }
+  .step-indicator.done .step-dot {
+    background: var(--sage); border-color: var(--sage); color: white;
+  }
+
+  .step-info { padding-top: 0.3rem; }
+  .step-name {
+    font-size: 0.8rem; font-weight: 500;
+    color: rgba(250,247,242,0.3);
+    transition: color 0.3s;
+  }
+  .step-indicator.active .step-name { color: var(--cream); }
+  .step-indicator.done .step-name { color: rgba(250,247,242,0.5); }
+  .step-desc {
+    font-size: 0.72rem; color: rgba(250,247,242,0.25);
+    margin-top: 0.15rem; font-weight: 300;
+  }
+  .step-indicator.active .step-desc { color: rgba(250,247,242,0.4); }
+
+  .left-bottom {
+    z-index: 1; margin-top: auto; padding-top: 2rem;
+    border-top: 1px solid rgba(201,185,154,0.12);
+  }
+  .left-bottom p {
+    font-size: 0.75rem; color: rgba(250,247,242,0.3);
+    line-height: 1.6;
+  }
+  .left-bottom a { color: var(--blush); text-decoration: none; }
+
+  /* ── RIGHT PANEL ── */
+  .right-panel {
+    padding: 0;
+    display: flex; flex-direction: column;
+    background: var(--warm-white);
+  }
+
+  .right-top {
+    padding: 1.5rem 3rem;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid rgba(201,185,154,0.25);
+  }
+
+  .progress-wrap { display: flex; align-items: center; gap: 1rem; flex: 1; max-width: 320px; }
+  .progress-track {
+    flex: 1; height: 4px; background: var(--sand); border-radius: 100px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; border-radius: 100px;
+    background: linear-gradient(to right, var(--blush), var(--accent));
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+  .progress-text { font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+
+  .right-content {
+    flex: 1; padding: 3.5rem 3rem;
+    max-width: 640px;
+  }
+
+  /* ── STEP PANELS ── */
+  .step-panel { display: none; }
+  .step-panel.active {
+    display: block;
+    animation: stepIn 0.4s ease both;
+  }
+
+  @keyframes stepIn {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+
+  .step-eyebrow {
+    font-size: 0.7rem; letter-spacing: 0.12em; color: var(--accent);
+    font-weight: 500; margin-bottom: 0.6rem;
+  }
+  .step-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.4rem; font-weight: 300; line-height: 1.15;
+    color: var(--dark); margin-bottom: 0.6rem;
+  }
+  .step-title em { font-style: italic; color: var(--accent); }
+  .step-subtitle {
+    font-size: 0.9rem; color: var(--muted); font-weight: 300;
+    line-height: 1.65; margin-bottom: 2.5rem;
+  }
+
+  /* ── FORM ELEMENTS ── */
+  .field { margin-bottom: 1.5rem; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+
+  label {
+    display: block; font-size: 0.78rem; font-weight: 500;
+    color: var(--dark); margin-bottom: 0.45rem; letter-spacing: 0.02em;
+  }
+  .label-hint { font-weight: 300; color: var(--muted); font-size: 0.72rem; margin-left: 0.4rem; }
+
+  input[type="text"], input[type="email"], input[type="date"],
+  select, textarea {
+    width: 100%; padding: 0.8rem 1rem;
+    border: 1.5px solid var(--sand); border-radius: 10px;
+    background: white; color: var(--dark);
+    font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(181,120,90,0.1);
+  }
+  input::placeholder, textarea::placeholder { color: var(--tan); }
+
+  textarea { resize: vertical; min-height: 110px; line-height: 1.6; }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238B6F52' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 1rem center;
+    padding-right: 2.5rem; cursor: pointer;
+  }
+
+  /* Name pill input */
+  .name-display {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem; font-weight: 300; color: var(--dark);
+    margin-top: 1rem; min-height: 2.5rem;
+    font-style: italic; color: var(--accent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .name-display.visible { opacity: 1; }
+
+  /* Category chips */
+  .chip-grid { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 0.5rem; }
+  .chip {
+    padding: 0.5rem 1rem; border-radius: 100px;
+    border: 1.5px solid var(--sand); background: white;
+    font-size: 0.8rem; color: var(--muted); cursor: pointer;
+    transition: all 0.15s; user-select: none;
+    display: flex; align-items: center; gap: 0.4rem;
+  }
+  .chip:hover { border-color: var(--tan); color: var(--dark); }
+  .chip.selected {
+    background: var(--accent-light); border-color: var(--accent);
+    color: var(--accent); font-weight: 500;
+  }
+
+  /* Dietary toggles */
+  .toggle-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin-top: 0.5rem; }
+  .toggle-item {
+    padding: 0.65rem 0.75rem; border-radius: 10px;
+    border: 1.5px solid var(--sand); background: white;
+    font-size: 0.78rem; color: var(--muted); cursor: pointer;
+    transition: all 0.15s; text-align: center; user-select: none;
+  }
+  .toggle-item:hover { border-color: var(--tan); }
+  .toggle-item.selected {
+    background: var(--accent-light); border-color: var(--accent); color: var(--accent);
+  }
+
+  /* Duration picker */
+  .duration-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; margin-top: 0.5rem; }
+  .duration-item {
+    padding: 1rem 0.5rem; border-radius: 12px;
+    border: 1.5px solid var(--sand); background: white;
+    font-size: 0.8rem; color: var(--muted); cursor: pointer;
+    transition: all 0.15s; text-align: center; user-select: none;
+  }
+  .duration-item .dur-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem; font-weight: 300; display: block;
+    color: var(--dark); line-height: 1;
+  }
+  .duration-item .dur-label { font-size: 0.7rem; margin-top: 0.25rem; display: block; }
+  .duration-item:hover { border-color: var(--tan); }
+  .duration-item.selected {
+    background: var(--accent-light); border-color: var(--accent); color: var(--accent);
+  }
+  .duration-item.selected .dur-num { color: var(--accent); }
+
+  /* Contributor list */
+  .contributor-list { display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1rem; }
+  .contributor-row {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.75rem 1rem; background: white; border-radius: 10px;
+    border: 1.5px solid var(--sand); animation: stepIn 0.3s ease both;
+  }
+  .contributor-avatar {
+    width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--blush), var(--tan));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem; font-weight: 500; color: white;
+  }
+  .contributor-info { flex: 1; }
+  .contributor-name { font-size: 0.85rem; font-weight: 500; color: var(--dark); }
+  .contributor-email { font-size: 0.72rem; color: var(--muted); }
+  .contributor-remove {
+    background: none; border: none; color: var(--tan); cursor: pointer;
+    font-size: 1rem; padding: 0.2rem; transition: color 0.15s;
+  }
+  .contributor-remove:hover { color: var(--accent); }
+
+  .add-contributor-row {
+    display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.6rem;
+    align-items: end;
+  }
+
+  /* Message box */
+  .message-preview {
+    margin-top: 1rem; padding: 1.25rem 1.5rem;
+    background: white; border-radius: 12px;
+    border: 1px solid var(--sand);
+    font-size: 0.85rem; color: var(--muted); line-height: 1.7;
+    font-style: italic; min-height: 80px;
+    white-space: pre-wrap;
+  }
+  .message-preview-label {
+    font-size: 0.68rem; letter-spacing: 0.08em; color: var(--tan);
+    font-weight: 500; margin-bottom: 0.4rem; font-style: normal;
+  }
+
+  /* Review card */
+  .review-card {
+    background: white; border-radius: 14px;
+    border: 1px solid var(--sand); overflow: hidden;
+    margin-bottom: 1rem;
+  }
+  .review-card-header {
+    padding: 1rem 1.25rem;
+    background: var(--sand); display: flex; align-items: center;
+    justify-content: space-between;
+  }
+  .review-card-title { font-size: 0.78rem; font-weight: 500; color: var(--dark); letter-spacing: 0.04em; }
+  .review-edit { font-size: 0.72rem; color: var(--accent); cursor: pointer; text-decoration: underline; }
+  .review-card-body { padding: 1rem 1.25rem; }
+  .review-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 0.4rem 0; border-bottom: 1px solid rgba(201,185,154,0.2);
+    font-size: 0.82rem;
+  }
+  .review-row:last-child { border-bottom: none; }
+  .review-key { color: var(--muted); font-weight: 300; }
+  .review-val { color: var(--dark); font-weight: 400; text-align: right; max-width: 60%; }
+
+  .chips-preview { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .chip-sm {
+    padding: 0.2rem 0.6rem; border-radius: 100px;
+    background: var(--accent-light); color: var(--accent);
+    font-size: 0.7rem; font-weight: 500;
+  }
+
+  /* ── BOTTOM NAV ── */
+  .right-bottom {
+    padding: 1.5rem 3rem;
+    border-top: 1px solid rgba(201,185,154,0.25);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--warm-white);
+  }
+
+  .btn-back {
+    background: none; border: 1.5px solid var(--sand);
+    color: var(--muted); padding: 0.75rem 1.75rem;
+    border-radius: 100px; font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-back:hover { border-color: var(--tan); color: var(--dark); }
+  .btn-back:disabled { opacity: 0.3; cursor: default; }
+
+  .btn-next {
+    background: var(--dark); color: var(--cream);
+    padding: 0.75rem 2rem; border-radius: 100px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem; font-weight: 500; cursor: pointer;
+    border: none; transition: all 0.2s;
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .btn-next:hover { background: var(--accent); transform: translateY(-1px); }
+
+  .btn-launch {
+    background: var(--accent); color: white;
+    padding: 0.75rem 2rem; border-radius: 100px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem; font-weight: 500; cursor: pointer;
+    border: none; transition: all 0.2s;
+    display: none; align-items: center; gap: 0.5rem;
+  }
+  .btn-launch:hover { background: var(--brown); transform: translateY(-1px); }
+  .btn-launch.visible { display: flex; }
+
+  .step-counter { font-size: 0.78rem; color: var(--tan); }
+
+  /* ── SUCCESS ── */
+  .success-panel {
+    display: none; flex-direction: column; align-items: center;
+    justify-content: center; text-align: center;
+    padding: 4rem 2rem; flex: 1;
+    animation: stepIn 0.5s ease both;
+  }
+  .success-panel.active { display: flex; }
+
+  .success-icon {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--blush), var(--accent));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; margin-bottom: 2rem;
+    box-shadow: 0 8px 32px rgba(181,120,90,0.25);
+  }
+  .success-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.8rem; font-weight: 300; line-height: 1.2;
+    color: var(--dark); margin-bottom: 0.75rem;
+  }
+  .success-title em { font-style: italic; color: var(--accent); }
+  .success-sub { font-size: 0.95rem; color: var(--muted); font-weight: 300; line-height: 1.7; max-width: 42ch; margin-bottom: 2.5rem; }
+
+  .share-box {
+    display: flex; gap: 0.6rem; width: 100%; max-width: 420px;
+    background: white; border-radius: 12px;
+    border: 1.5px solid var(--sand); padding: 0.6rem 0.6rem 0.6rem 1.25rem;
+    align-items: center;
+  }
+  .share-url { flex: 1; font-size: 0.85rem; color: var(--muted); font-family: monospace; }
+  .btn-copy {
+    background: var(--dark); color: var(--cream);
+    border: none; padding: 0.55rem 1.1rem; border-radius: 8px;
+    font-family: 'DM Sans', sans-serif; font-size: 0.78rem; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-copy:hover { background: var(--accent); }
+
+  .success-actions { display: flex; gap: 1rem; margin-top: 2rem; }
+
+  @media (max-width: 860px) {
+    .shell { grid-template-columns: 1fr; }
+    .left-panel { display: none; }
+    .right-content { padding: 2rem 1.5rem; }
+    .right-top, .right-bottom { padding: 1.25rem 1.5rem; }
+    .field-row { grid-template-columns: 1fr; }
+    .toggle-grid { grid-template-columns: repeat(2, 1fr); }
+    .duration-grid { grid-template-columns: repeat(2, 1fr); }
+    .add-contributor-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- LEFT PANEL -->
+  <div class="left-panel">
+    <div class="left-bg"></div>
+    <a href="index.html" class="left-logo">Relay<span>On</span></a>
+    <div class="left-content">
+      <h2 class="left-heading">Set up a care<br>page <em>in minutes.</em></h2>
+      <p class="left-body">You're doing something meaningful. We'll walk you through it, one gentle step at a time.</p>
+
+      <div class="steps-nav" id="stepsNav">
+        <div class="step-indicator active" data-step="1">
+          <div class="step-dot">1</div>
+          <div class="step-info">
+            <div class="step-name">The family</div>
+            <div class="step-desc">Name, location & dates</div>
+          </div>
+        </div>
+        <div class="step-indicator" data-step="2">
+          <div class="step-dot">2</div>
+          <div class="step-info">
+            <div class="step-name">Needs & preferences</div>
+            <div class="step-desc">What would help most</div>
+          </div>
+        </div>
+        <div class="step-indicator" data-step="3">
+          <div class="step-dot">3</div>
+          <div class="step-info">
+            <div class="step-name">Invite contributors</div>
+            <div class="step-desc">Add emails to notify</div>
+          </div>
+        </div>
+        <div class="step-indicator" data-step="4">
+          <div class="step-dot">4</div>
+          <div class="step-info">
+            <div class="step-name">Your message</div>
+            <div class="step-desc">A note to the community</div>
+          </div>
+        </div>
+        <div class="step-indicator" data-step="5">
+          <div class="step-dot">5</div>
+          <div class="step-info">
+            <div class="step-name">Review & launch</div>
+            <div class="step-desc">Confirm everything looks right</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="left-bottom">
+      <p>Already have a page? <a href="#">Sign in →</a></p>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="right-panel">
+
+    <div class="right-top" id="rightTop">
+      <div class="progress-wrap">
+        <div class="progress-track">
+          <div class="progress-fill" id="progressFill" style="width:20%"></div>
+        </div>
+        <span class="progress-text" id="progressText">Step 1 of 5</span>
+      </div>
+    </div>
+
+    <div class="right-content" id="rightContent">
+
+      <!-- STEP 1: The Family -->
+      <div class="step-panel active" id="step1">
+        <div class="step-eyebrow">STEP 1 OF 5</div>
+        <h2 class="step-title">Tell us about<br><em>the family.</em></h2>
+        <p class="step-subtitle">This is the heart of the page — the name people will rally around.</p>
+
+        <div class="field">
+          <label>Family name <span class="label-hint">e.g. "The Henderson Family" or "Margaret's Family"</span></label>
+          <input type="text" id="familyName" placeholder="The ___ Family" oninput="updateNameDisplay(this.value)" />
+          <div class="name-display" id="nameDisplay"></div>
+        </div>
+
+        <div class="field-row">
+          <div class="field" style="margin:0">
+            <label>City / Town</label>
+            <input type="text" id="city" placeholder="e.g. Portland, OR" />
+          </div>
+          <div class="field" style="margin:0">
+            <label>Care start date</label>
+            <input type="date" id="startDate" />
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:1rem">
+          <label>How long would you like to schedule care for?</label>
+          <div class="duration-grid">
+            <div class="duration-item" onclick="selectDuration(this, '2 weeks')">
+              <span class="dur-num">2</span>
+              <span class="dur-label">weeks</span>
+            </div>
+            <div class="duration-item selected" onclick="selectDuration(this, '1 month')">
+              <span class="dur-num">1</span>
+              <span class="dur-label">month</span>
+            </div>
+            <div class="duration-item" onclick="selectDuration(this, '3 months')">
+              <span class="dur-num">3</span>
+              <span class="dur-label">months</span>
+            </div>
+            <div class="duration-item" onclick="selectDuration(this, '6 months')">
+              <span class="dur-num">6</span>
+              <span class="dur-label">months</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: Needs & Preferences -->
+      <div class="step-panel" id="step2">
+        <div class="step-eyebrow">STEP 2 OF 5</div>
+        <h2 class="step-title">What would<br><em>help most?</em></h2>
+        <p class="step-subtitle">Let contributors know what kinds of care are most welcome — and what to skip.</p>
+
+        <div class="field">
+          <label>What types of care are most helpful?</label>
+          <div class="chip-grid" id="careTypes">
+            <div class="chip selected" onclick="toggleChip(this)">🍲 Home-cooked meals</div>
+            <div class="chip selected" onclick="toggleChip(this)">🌸 Fresh flowers</div>
+            <div class="chip" onclick="toggleChip(this)">🧹 House cleaning</div>
+            <div class="chip" onclick="toggleChip(this)">🛒 Grocery delivery</div>
+            <div class="chip" onclick="toggleChip(this)">🥐 Bakery treats</div>
+            <div class="chip" onclick="toggleChip(this)">🌿 Plant delivery</div>
+            <div class="chip" onclick="toggleChip(this)">📦 Gift boxes</div>
+            <div class="chip" onclick="toggleChip(this)">🍕 Restaurant delivery</div>
+            <div class="chip" onclick="toggleChip(this)">✉️ Cards & notes</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Dietary needs or restrictions <span class="label-hint">select all that apply</span></label>
+          <div class="toggle-grid" id="dietaryNeeds">
+            <div class="toggle-item" onclick="toggleChip(this)">Vegetarian</div>
+            <div class="toggle-item" onclick="toggleChip(this)">Vegan</div>
+            <div class="toggle-item" onclick="toggleChip(this)">Gluten-free</div>
+            <div class="toggle-item" onclick="toggleChip(this)">Dairy-free</div>
+            <div class="toggle-item" onclick="toggleChip(this)">Nut allergy</div>
+            <div class="toggle-item" onclick="toggleChip(this)">Halal</div>
+            <div class="toggle-item" onclick="toggleChip(this)">Kosher</div>
+            <div class="toggle-item" onclick="toggleChip(this)">Low sodium</div>
+            <div class="toggle-item" onclick="toggleChip(this)">No restrictions</div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Anything else to know? <span class="label-hint">optional</span></label>
+          <textarea placeholder="e.g. 'They have two young kids, so kid-friendly meals are a huge help. Please ring the doorbell — the dog barks.'" id="extraNotes"></textarea>
+        </div>
+      </div>
+
+      <!-- STEP 3: Contributors -->
+      <div class="step-panel" id="step3">
+        <div class="step-eyebrow">STEP 3 OF 5</div>
+        <h2 class="step-title">Who wants<br><em>to show up?</em></h2>
+        <p class="step-subtitle">Add emails for friends, family, or community members. They'll get a warm invitation to join the relay.</p>
+
+        <div class="contributor-list" id="contributorList">
+          <div class="contributor-row">
+            <div class="contributor-avatar">SR</div>
+            <div class="contributor-info">
+              <div class="contributor-name">Sarah R.</div>
+              <div class="contributor-email">sarah.r@email.com</div>
+            </div>
+            <button class="contributor-remove" onclick="removeContributor(this)">×</button>
+          </div>
+        </div>
+
+        <div class="add-contributor-row">
+          <div>
+            <label>Name</label>
+            <input type="text" id="newName" placeholder="Friend's name" />
+          </div>
+          <div>
+            <label>Email</label>
+            <input type="email" id="newEmail" placeholder="friend@email.com" />
+          </div>
+          <button class="btn-next" style="margin-top:1.5rem; padding: 0.75rem 1.2rem" onclick="addContributor()">Add</button>
+        </div>
+
+        <p style="font-size:0.78rem; color:var(--muted); margin-top:1.5rem; font-style:italic; line-height:1.6;">
+          You can also skip this and share a link after launch. Contributors don't need an account to claim a date.
+        </p>
+      </div>
+
+      <!-- STEP 4: Message -->
+      <div class="step-panel" id="step4">
+        <div class="step-eyebrow">STEP 4 OF 5</div>
+        <h2 class="step-title">A note to<br><em>your people.</em></h2>
+        <p class="step-subtitle">This message will appear at the top of the page when contributors arrive. Make it yours.</p>
+
+        <div class="field">
+          <label>Your message</label>
+          <textarea id="guestMessage" placeholder="e.g. 'We're setting up a care calendar for the Henderson family as they navigate this difficult time. Even small gestures go so far — please claim a date if you're able. Thank you for being part of their village.'" oninput="updatePreview(this.value)" style="min-height:140px"></textarea>
+        </div>
+
+        <div>
+          <div class="message-preview-label">PREVIEW</div>
+          <div class="message-preview" id="messagePreview">Your message will appear here as you type...</div>
+        </div>
+
+        <div class="field" style="margin-top:1.5rem">
+          <label>Your name <span class="label-hint">shown as the organizer</span></label>
+          <input type="text" id="organizerName" placeholder="e.g. Claire Lewis" />
+        </div>
+      </div>
+
+      <!-- STEP 5: Review -->
+      <div class="step-panel" id="step5">
+        <div class="step-eyebrow">STEP 5 OF 5</div>
+        <h2 class="step-title">Almost<br><em>ready.</em></h2>
+        <p class="step-subtitle">Take a moment to review everything before you send it out into the world.</p>
+
+        <div class="review-card">
+          <div class="review-card-header">
+            <div class="review-card-title">THE FAMILY</div>
+            <span class="review-edit" onclick="goToStep(1)">Edit</span>
+          </div>
+          <div class="review-card-body">
+            <div class="review-row">
+              <span class="review-key">Family name</span>
+              <span class="review-val" id="rv-name">—</span>
+            </div>
+            <div class="review-row">
+              <span class="review-key">Location</span>
+              <span class="review-val" id="rv-city">—</span>
+            </div>
+            <div class="review-row">
+              <span class="review-key">Care begins</span>
+              <span class="review-val" id="rv-date">—</span>
+            </div>
+            <div class="review-row">
+              <span class="review-key">Duration</span>
+              <span class="review-val" id="rv-duration">1 month</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="review-card">
+          <div class="review-card-header">
+            <div class="review-card-title">CARE TYPES</div>
+            <span class="review-edit" onclick="goToStep(2)">Edit</span>
+          </div>
+          <div class="review-card-body">
+            <div id="rv-caretypes" class="chips-preview" style="padding:0.4rem 0">
+              <span class="chip-sm">🍲 Home-cooked meals</span>
+              <span class="chip-sm">🌸 Fresh flowers</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="review-card">
+          <div class="review-card-header">
+            <div class="review-card-title">CONTRIBUTORS</div>
+            <span class="review-edit" onclick="goToStep(3)">Edit</span>
+          </div>
+          <div class="review-card-body">
+            <div class="review-row">
+              <span class="review-key">Invited</span>
+              <span class="review-val" id="rv-contributors">1 person</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="review-card">
+          <div class="review-card-header">
+            <div class="review-card-title">YOUR MESSAGE</div>
+            <span class="review-edit" onclick="goToStep(4)">Edit</span>
+          </div>
+          <div class="review-card-body">
+            <div style="font-size:0.82rem; color:var(--muted); font-style:italic; line-height:1.65;" id="rv-message">No message added yet.</div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /right-content -->
+
+    <!-- SUCCESS -->
+    <div class="success-panel" id="successPanel">
+      <div class="success-icon">🌿</div>
+      <h2 class="success-title">Your page is<br><em>live.</em></h2>
+      <p class="success-sub">Share the link below — contributors can start claiming dates right away. No account needed.</p>
+      <div class="share-box">
+        <span class="share-url" id="shareUrl">relayon.com/henderson-family</span>
+        <button class="btn-copy" onclick="copyLink()">Copy link</button>
+      </div>
+      <div class="success-actions">
+        <button class="btn-next" onclick="window.location.href='relayon-schedule.html'">View the schedule →</button>
+      </div>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <div class="right-bottom" id="rightBottom">
+      <button class="btn-back" id="btnBack" onclick="prevStep()" disabled>← Back</button>
+      <span class="step-counter" id="stepCounter">1 / 5</span>
+      <button class="btn-next" id="btnNext" onclick="nextStep()">Continue →</button>
+      <button class="btn-launch" id="btnLaunch" onclick="launch()">✦ Launch page</button>
+    </div>
+
+  </div><!-- /right-panel -->
+</div>
+
+<script>
+  let currentStep = 1;
+  const totalSteps = 5;
+  let duration = '1 month';
+  let contributors = [{ name: 'Sarah R.', email: 'sarah.r@email.com' }];
+
+  function updateStep(step) {
+    // Update panels
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    const panel = document.getElementById('step' + step);
+    if (panel) panel.classList.add('active');
+
+    // Update sidebar
+    document.querySelectorAll('.step-indicator').forEach(ind => {
+      const s = parseInt(ind.dataset.step);
+      ind.classList.remove('active', 'done');
+      if (s === step) ind.classList.add('active');
+      else if (s < step) ind.classList.add('done');
+    });
+
+    // Checkmarks for done
+    document.querySelectorAll('.step-indicator.done .step-dot').forEach(dot => {
+      dot.textContent = '✓';
+    });
+    document.querySelectorAll('.step-indicator:not(.done) .step-dot').forEach(dot => {
+      const s = dot.closest('.step-indicator').dataset.step;
+      dot.textContent = s;
+    });
+
+    // Progress bar
+    const pct = (step / totalSteps) * 100;
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressText').textContent = `Step ${step} of ${totalSteps}`;
+    document.getElementById('stepCounter').textContent = `${step} / ${totalSteps}`;
+
+    // Buttons
+    document.getElementById('btnBack').disabled = step === 1;
+    if (step === totalSteps) {
+      document.getElementById('btnNext').style.display = 'none';
+      document.getElementById('btnLaunch').classList.add('visible');
+    } else {
+      document.getElementById('btnNext').style.display = 'flex';
+      document.getElementById('btnLaunch').classList.remove('visible');
+    }
+
+    // Populate review
+    if (step === 5) populateReview();
+  }
+
+  function nextStep() {
+    if (currentStep < totalSteps) {
+      currentStep++;
+      updateStep(currentStep);
+    }
+  }
+
+  function prevStep() {
+    if (currentStep > 1) {
+      currentStep--;
+      updateStep(currentStep);
+    }
+  }
+
+  function goToStep(s) {
+    currentStep = s;
+    updateStep(s);
+  }
+
+  function updateNameDisplay(val) {
+    const el = document.getElementById('nameDisplay');
+    if (val.trim()) {
+      el.textContent = val;
+      el.classList.add('visible');
+    } else {
+      el.classList.remove('visible');
+    }
+  }
+
+  function selectDuration(el, val) {
+    document.querySelectorAll('.duration-item').forEach(d => d.classList.remove('selected'));
+    el.classList.add('selected');
+    duration = val;
+  }
+
+  function toggleChip(el) {
+    el.classList.toggle('selected');
+  }
+
+  function addContributor() {
+    const name = document.getElementById('newName').value.trim();
+    const email = document.getElementById('newEmail').value.trim();
+    if (!name || !email) return;
+
+    contributors.push({ name, email });
+    const initials = name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+    const colors = ['av-1','av-2','av-3','av-4'];
+    const colorClass = colors[contributors.length % colors.length];
+
+    const row = document.createElement('div');
+    row.className = 'contributor-row';
+    row.innerHTML = `
+      <div class="contributor-avatar" style="background:linear-gradient(135deg,var(--blush),var(--tan))">${initials}</div>
+      <div class="contributor-info">
+        <div class="contributor-name">${name}</div>
+        <div class="contributor-email">${email}</div>
+      </div>
+      <button class="contributor-remove" onclick="removeContributor(this)">×</button>
+    `;
+    document.getElementById('contributorList').appendChild(row);
+    document.getElementById('newName').value = '';
+    document.getElementById('newEmail').value = '';
+  }
+
+  function removeContributor(btn) {
+    btn.closest('.contributor-row').remove();
+    contributors.pop();
+  }
+
+  function updatePreview(val) {
+    const el = document.getElementById('messagePreview');
+    el.textContent = val || 'Your message will appear here as you type...';
+  }
+
+  function populateReview() {
+    const name = document.getElementById('familyName').value || '—';
+    const city = document.getElementById('city').value || '—';
+    const date = document.getElementById('startDate').value;
+    const msg = document.getElementById('guestMessage').value || 'No message added yet.';
+    const count = document.querySelectorAll('#contributorList .contributor-row').length;
+
+    document.getElementById('rv-name').textContent = name;
+    document.getElementById('rv-city').textContent = city;
+    document.getElementById('rv-date').textContent = date ? new Date(date + 'T00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—';
+    document.getElementById('rv-duration').textContent = duration;
+    document.getElementById('rv-message').textContent = msg;
+    document.getElementById('rv-contributors').textContent = count + (count === 1 ? ' person' : ' people');
+
+    // Care types
+    const chips = Array.from(document.querySelectorAll('#careTypes .chip.selected')).map(c => c.textContent);
+    const container = document.getElementById('rv-caretypes');
+    container.innerHTML = chips.length ? chips.map(c => `<span class="chip-sm">${c}</span>`).join('') : '<span style="font-size:0.82rem;color:var(--muted)">None selected</span>';
+  }
+
+  function launch() {
+    const familyName = document.getElementById('familyName').value || 'your-family';
+    const slug = familyName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    document.getElementById('shareUrl').textContent = `relayon.com/${slug}`;
+
+    // Hide panels, show success
+    document.getElementById('rightTop').style.display = 'none';
+    document.getElementById('rightContent').style.display = 'none';
+    document.getElementById('rightBottom').style.display = 'none';
+    document.getElementById('successPanel').classList.add('active');
+
+    // Update sidebar to all done
+    document.querySelectorAll('.step-indicator').forEach(ind => {
+      ind.classList.remove('active');
+      ind.classList.add('done');
+      ind.querySelector('.step-dot').textContent = '✓';
+    });
+  }
+
+  function copyLink() {
+    const url = document.getElementById('shareUrl').textContent;
+    navigator.clipboard.writeText(url).catch(() => {});
+    const btn = document.querySelector('.btn-copy');
+    btn.textContent = 'Copied!';
+    setTimeout(() => btn.textContent = 'Copy link', 2000);
+  }
+
+  // Set default date to today
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('startDate').value = today;
+</script>
+</body>
+</html>
